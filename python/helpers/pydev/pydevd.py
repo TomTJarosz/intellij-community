@@ -380,6 +380,12 @@ def stoptrace():
 
         connected = False
 
+    from _pydevd_frame_eval.pydevd_frame_eval_main import clear_thread_local_info
+
+    if clear_thread_local_info is not None:
+        # clear cached `thread_trace_func` pointing to old `PyDB`
+        clear_thread_local_info()
+
 
 #=======================================================================================================================
 # PyDB
@@ -401,7 +407,6 @@ class PyDB(object):
 
     def __init__(self, set_as_global=True):
         if set_as_global:
-            set_global_debugger(self)
             pydevd_tracing.replace_sys_set_trace_func()
 
         self.reader = None
@@ -498,6 +503,9 @@ class PyDB(object):
 
         # If True, pydevd will stop on assertion errors in tests.
         self.stop_on_failed_tests = False
+
+        if set_as_global:
+            set_global_debugger(self)
 
     def get_thread_local_trace_func(self):
         try:
